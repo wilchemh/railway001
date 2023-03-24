@@ -11,4 +11,6 @@ const server = app.listen(process.env.PORT || 8080, () => {
   const port = server.address().port;
 
   console.log('Example app listening at http://' + host + ':' + port);
+  console.log(port);
+  console.log(process.env);
 });
