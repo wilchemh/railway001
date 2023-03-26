@@ -22,10 +22,10 @@ app.get('/api/todos', async function(req,res){
     
   try{ 
     // get all todos from pg table
-    const filteredTodos = (await pool.query('SELECT * FROM todos')).rows;
+    var filteredTodos = (await pool.query('SELECT * FROM todos')).rows;
 
     //Get QSP from url
-    var queryParams = req.query;
+    const queryParams = req.query;
 
     //Filter todos completed status based on completed QSP
     if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
@@ -55,13 +55,12 @@ app.get('/api/todos', async function(req,res){
 //GET /todos/:id
 app.get('/api/todos/:id', async function(req,res){
 
-
   try{ 
 
     // get id from route
-    var todoId = parseInt(req.params.id, 10);
+    const todoId = parseInt(req.params.id, 10);
 
-    // get all todos from pg table
+    // get todos that match id from pg table
     const filteredTodos = (await pool.query('SELECT * FROM todos where id = $1',[todoId])).rows;
 
     //return todos
@@ -73,51 +72,82 @@ app.get('/api/todos/:id', async function(req,res){
     })
   }
 
-
-
-  // var todoId = parseInt(req.params.id, 10);
-  // var matchedTodo = _.findWhere(todos,{id: todoId});
-      
-  // if (matchedTodo){
-  //     res.json(matchedTodo);    
-  // } else {
-  //   res.status(404).send({
-  //     "error": "No Todo found with requeted id"
-  //   });
-  // }
-
 });
 
 //POST /todos
-app.post('/api/todos', function(req,res){
+app.post('/api/todos', async function(req,res){
     
-  var body = _.pick(req.body, 'description', 'completed');
+  try{ 
 
-  if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
+    // get body from request
+    var body = _.pick(req.body, 'description', 'completed');
+
+    // validate body values
+    if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
       return res.status(400).send();
+    }
+
+    //trim desc to get rid of any white spaces
+    body.description = body.description.trim();
+  
+    // add todo to todos pg table
+    const filteredTodos = (await pool.query('Insert INTO todos (description, completed) VALUES($1, $2) RETURNING *',[body.description, body.completed])).rows;
+
+    //return added record
+      res.send(filteredTodos);
+
+      
+  }
+  catch(err){
+    setImmediate(() => {
+      throw err
+    })
   }
 
-  body.id = todoNextId++;
-  body.description = body.description.trim();
 
-  todos.push(body);
 
-  res.send(body);
+
+  // var body = _.pick(req.body, 'description', 'completed');
+
+  // if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
+  //     return res.status(400).send();
+  // }
+
+  // body.id = todoNextId++;
+  // body.description = body.description.trim();
+
+  // todos.push(body);
+
+  // res.send(body);
   
 });
 
 //DELETE /todos/:id
-app.delete('/api/todos/:id', function(req,res){
-  var todoId = parseInt(req.params.id, 10);
-  var matchedTodo = _.findWhere(todos,{id: todoId});
+app.delete('/api/todos/:id', async function(req,res){
 
-  if (!matchedTodo){
+
+  try{ 
+
+    // get id from route
+    const todoId = parseInt(req.params.id, 10);
+
+    // delete todos that match id from pg table
+    const filteredTodos = (await pool.query('DELETE FROM todos where id = $1 RETURNING *',[todoId])).rows;
+
+    //return todos that where deleted or 404 if id is not found
+    if (filteredTodos.length > 0){
+      res.json(filteredTodos);
+    } else {
       res.status(404).send({
-          "error": "No Todo found with requeted id"
+        "error": "No Todo found with requeted id"
       });
-  } else {
-      todos = _.without(todos, matchedTodo);
-      res.json(matchedTodo);
+    }
+      
+  }
+  catch(err){
+    setImmediate(() => {
+      throw err
+    })
   }
 
 });
