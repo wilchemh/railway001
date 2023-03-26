@@ -82,14 +82,20 @@ app.post('/api/todos', async function(req,res){
     // get body from request
     var body = _.pick(req.body, 'description', 'completed');
 
-    // validate body values
-    if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
-      return res.status(400).send();
+    // validate completed body values, requires true or false not 0 or 1
+    if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
+      // do nothing
+    } else if (body.hasOwnProperty('completed')) {
+      return res.status(400).send({"error":"Invalid Completed"});
     }
 
-    //trim desc to get rid of any white spaces
-    body.description = body.description.trim();
-  
+    // validate description body values
+    if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0){
+      body.description = body.description.trim();
+    } else if (body.hasOwnProperty('description')) {
+        return res.status(400).send({"error":"Invalid Description"});
+    }
+
     // add todo to todos pg table
     const filteredTodos = (await pool.query('Insert INTO todos (description, completed) VALUES($1, $2) RETURNING *',[body.description, body.completed])).rows;
 
@@ -104,22 +110,6 @@ app.post('/api/todos', async function(req,res){
     })
   }
 
-
-
-
-  // var body = _.pick(req.body, 'description', 'completed');
-
-  // if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
-  //     return res.status(400).send();
-  // }
-
-  // body.id = todoNextId++;
-  // body.description = body.description.trim();
-
-  // todos.push(body);
-
-  // res.send(body);
-  
 });
 
 //DELETE /todos/:id
@@ -153,31 +143,78 @@ app.delete('/api/todos/:id', async function(req,res){
 });
 
 //PUT /todos/:id
-app.put('/api/todos/:id', function(req,res){
-  var todoId = parseInt(req.params.id, 10);
-  var matchedTodo = _.findWhere(todos,{id: todoId});
-  var body = _.pick(req.body, 'description', 'completed');
-  var validAttributes ={};
+app.put('/api/todos/:id', async function(req,res){
 
-  if (!matchedTodo){
-      return res.status(404).send();
+  try{
+    // get id from route
+    var todoId = parseInt(req.params.id, 10);
+
+    // get body from request
+    var body = _.pick(req.body, 'description', 'completed');
+
+    // validate completed body values
+    if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
+        //Do Nothing
+    } else  {
+        return res.status(400).send({"error":"Invalid or missing c  ompleted"});
+    }
+
+    if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0){
+        body.description = body.description.trim();
+    } else if (body.hasOwnProperty('description')) {
+        return res.status(400).send({"error":"Invalid Description"});
+    } else {
+        return res.status(400).send({"error":"Missing Description"});
+    }
+
+    
+    // update todos that match id from pg table (requires request to include desc text and complete boolean)
+    const filteredTodos = (await pool.query('UPDATE todos set description = $1, completed = $2 WHERE ID = $3 RETURNING *',[body.description, body.completed, todoId])).rows;
+
+
+    //return todos that where deleted or 404 if id is not found
+    if (filteredTodos.length > 0){
+      res.json(filteredTodos);
+    } else {
+      res.status(404).send({
+        "error": "No Todo found with requeted id"
+      });
+    }
+
+
+
+  }
+  catch(err){
+    setImmediate(() => {
+      throw err
+    })  
   }
 
-  if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
-      validAttributes.completed = body.completed;
-  } else if (body.hasOwnProperty('completed')) {
-      return res.status(400).send({"error":"Invalid Completed"});
-  }
 
-  if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0){
-      validAttributes.description = body.description.trim();
-  } else if (body.hasOwnProperty('description')) {
-      return res.status(400).send({"error":"Invalid Description"});
-  }
+  // var todoId = parseInt(req.params.id, 10);
+  // var matchedTodo = _.findWhere(todos,{id: todoId});
+  // var body = _.pick(req.body, 'description', 'completed');
+  // var validAttributes ={};
 
-  _.extend(matchedTodo, validAttributes);
+  // if (!matchedTodo){
+  //     return res.status(404).send();
+  // }
 
-  res.send(body);
+  // if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
+  //     validAttributes.completed = body.completed;
+  // } else if (body.hasOwnProperty('completed')) {
+  //     return res.status(400).send({"error":"Invalid Completed"});
+  // }
+
+  // if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0){
+  //     validAttributes.description = body.description.trim();
+  // } else if (body.hasOwnProperty('description')) {
+  //     return res.status(400).send({"error":"Invalid Description"});
+  // }
+
+  // _.extend(matchedTodo, validAttributes);
+
+  // res.send(body);
 
 });
 
