@@ -4,21 +4,13 @@ const _ = require ('underscore');
 const environment = require('dotenv').config();
 const { Pool } = require('pg')
 
-
 const pool = new Pool()
-
-
-
-
-
 const app = express();
+
 var todos = [];
 var todoNextId = 1;
 
 app.use(bodyParser.json());
-
-
-
 
 
 app.get('/', function(req,res){
@@ -28,78 +20,72 @@ app.get('/', function(req,res){
 //GET /todos
 app.get('/api/todos', async function(req,res){
     
-  // get all todos from pg table
-  const filteredTodos = (await pool.query('SELECT * FROM todos')).rows;
+  try{ 
+    // get all todos from pg table
+    const filteredTodos = (await pool.query('SELECT * FROM todos')).rows;
 
-  //Get QSP from url
-  var queryParams = req.query;
+    //Get QSP from url
+    var queryParams = req.query;
 
-  //Filter todos completed status based on completed QSP
-  if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
-    filteredTodos = _.where(filteredTodos,{completed: true});
-  } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
-      filteredTodos = _.where(filteredTodos,{completed: false});
+    //Filter todos completed status based on completed QSP
+    if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
+      filteredTodos = _.where(filteredTodos,{completed: true});
+    } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
+        filteredTodos = _.where(filteredTodos,{completed: false});
+    }
+
+    //Filter todos description based on q QSP
+    if (queryParams.hasOwnProperty('q') && queryParams.q.trim().length > 0){
+      filteredTodos = _.filter(filteredTodos, function(todo){
+          return todo.description.toUpperCase().indexOf(queryParams.q.toUpperCase()) > -1;
+      });
+    }
+
+    //return todos
+    res.json(filteredTodos);
+  }
+  catch(err){
+    setImmediate(() => {
+      throw err
+    })
   }
 
-  //Filter todos description based on q QSP
-  if (queryParams.hasOwnProperty('q') && queryParams.q.trim().length > 0){
-    filteredTodos = _.filter(filteredTodos, function(todo){
-        return todo.description.toUpperCase().indexOf(queryParams.q.toUpperCase()) > -1;
-    });
-  }
-
-  //return todos
-  res.json(filteredTodos);
-
-
-
-
-
-
-
-  // pool
-  //   .query('SELECT * FROM todos')
-    
-  //   .then((sqlRes) => {
-  //     var filteredTodos = sqlRes.rows;
-
-  //     if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
-  //         filteredTodos = _.where(filteredTodos,{completed: true});
-  //     } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
-  //         filteredTodos = _.where(filteredTodos,{completed: false});
-  //     }
-    
-  //     if (queryParams.hasOwnProperty('q') && queryParams.q.trim().length > 0){
-  //       filteredTodos = _.filter(filteredTodos, function(todo){
-  //           return todo.description.toUpperCase().indexOf(queryParams.q.toUpperCase()) > -1;
-  //       });
-  //     }
-
-  //     res.json(filteredTodos);
-
-  //   })
-    
-  //   .catch((err) =>
-  //     setImmediate(() => {
-  //       throw err
-  //     })
-  //   )
-
-  
 });
 
 //GET /todos/:id
-app.get('/api/todos/:id', function(req,res){
-  var todoId = parseInt(req.params.id, 10);
-  var matchedTodo = _.findWhere(todos,{id: todoId});
-      
-  if (matchedTodo){
-      res.json(matchedTodo);    
-  } else {
-    res.status(404).send({
-      "error": "No Todo found with requeted id"
-    });
+app.get('/api/todos/:id', async function(req,res){
+
+
+  try{ 
+
+    // get id from route
+    var todoId = parseInt(req.params.id, 10);
+
+    // get all todos from pg table
+    const filteredTodos = (await pool.query('SELECT * FROM todos where id = $1',[todoId])).rows;
+
+    //return todos
+    res.json(filteredTodos);
   }
+  catch(err){
+    setImmediate(() => {
+      throw err
+    })
+  }
+
+
+
+  // var todoId = parseInt(req.params.id, 10);
+  // var matchedTodo = _.findWhere(todos,{id: todoId});
+      
+  // if (matchedTodo){
+  //     res.json(matchedTodo);    
+  // } else {
+  //   res.status(404).send({
+  //     "error": "No Todo found with requeted id"
+  //   });
+  // }
+
 });
 
 //POST /todos
