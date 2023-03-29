@@ -33,12 +33,12 @@ router.get('/', async function(req,res){
       }
   
       //return todos
-      res.json(filteredTodos);
+      res.send(api_result(true, filteredTodos , 'Todos'));
     }
     catch(err){
-      setImmediate(() => {
-        throw err
-      })
+      res.status(500).send({
+        "error": "Internal Server Error"
+      });
     }
   
 });
@@ -56,12 +56,26 @@ router.get('/:id', async function(req,res){
       const filteredTodos = (await pool.query('SELECT * FROM todos where id = $1',[todoId])).rows;
   
       //return todos
-      res.json(filteredTodos);
+     // res.send(api_result(true, filteredTodos , 'Todos'));
+
+      //return requested todo or 404 if id is not found
+      if (filteredTodos.length > 0){
+        res.send(api_result(true, filteredTodos , 'Todo'));
+      } else {
+        res.status(404);
+        res.send(api_result(false, null , 'No Todo found with requeted id'));
+      }
+
+
+
+
+
+
     }
     catch(err){
-      setImmediate(() => {
-        throw err
-      })
+      res.status(500).send({
+        "error": "Internal Server Error"
+      });
     }
   
 });
@@ -93,14 +107,14 @@ router.post('/', async function(req,res){
       const filteredTodos = (await pool.query('Insert INTO todos (description, completed) VALUES($1, $2) RETURNING *',[body.description, body.completed])).rows;
   
       //return added record
-        res.send(filteredTodos);
+      res.send(api_result(true, filteredTodos , 'Todo Added'));
   
         
     }
     catch(err){
-      setImmediate(() => {
-        throw err
-      })
+      res.status(500).send({
+        "error": "Internal Server Error"
+      });
     }
   
 });
@@ -120,18 +134,17 @@ router.delete('/:id', async function(req,res){
   
       //return todos that where deleted or 404 if id is not found
       if (filteredTodos.length > 0){
-        res.json(filteredTodos);
+        res.send(api_result(true, filteredTodos , 'Todo Deleted'));
       } else {
-        res.status(404).send({
-          "error": "No Todo found with requeted id"
-        });
+        res.status(404);
+        res.send(api_result(false, null , 'No Todo found with requeted id'));
       }
         
     }
     catch(err){
-      setImmediate(() => {
-        throw err
-      })
+      res.status(500).send({
+        "error": "Internal Server Error"
+      });
     }
   
 });
@@ -151,7 +164,7 @@ router.put('/:id', async function(req,res){
       if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
           //Do Nothing
       } else  {
-          return res.status(400).send({"error":"Invalid or missing c  ompleted"});
+          return res.status(400).send({"error":"Invalid or missing completed"});
       }
   
       if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0){
@@ -169,18 +182,17 @@ router.put('/:id', async function(req,res){
   
       //return todos that where deleted or 404 if id is not found
       if (filteredTodos.length > 0){
-        res.json(filteredTodos);
+        res.send(api_result(true, filteredTodos , 'Todo Updated'));
       } else {
-        res.status(404).send({
-          "error": "No Todo found with requeted id"
-        });
+        res.status(404);
+        res.send(api_result(false, null , 'No Todo found with requeted id'));
       }
   
     }
     catch(err){
-      setImmediate(() => {
-        throw err
-      })  
+      res.status(500).send({
+        "error": "Internal Server Error"
+      });
     }
   
 });
