@@ -7,6 +7,11 @@ const util = require('./modules/util');
 const { Pool } = require('pg');
 const pool = new Pool();
 
+router.use((req, res, next) => {
+  console.log('Time: ', Date.now())
+  next()
+})
+
 
 //GET /todos
 router.get('/', async function(req,res){
