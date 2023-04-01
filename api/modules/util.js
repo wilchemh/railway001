@@ -8,7 +8,8 @@ const util = {
 		//console.log(req.isAuthenticated());
 		if (req.isAuthenticated())
 	    	return next();
-		res.redirect("#!login");
+		res.sendStatus(401);
+		//res.redirect("#!login");
 	},
 
 	isAuthenticatedAdmin: function (req, res, next) {
