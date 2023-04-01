@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="statPro">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Company Name</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+
+    <!-- External Library Scripts -->
+    <SCRIPT src="node_modules/jquery/dist/jquery.min.js"></SCRIPT>
+    <SCRIPT src="node_modules/angular/angular.min.js"></SCRIPT>
+    <SCRIPT src="node_modules/angular-route/angular-route.min.js"></SCRIPT>
+    <SCRIPT src="node_modules/angular-animate/angular-animate.min.js"></SCRIPT>
+    <SCRIPT src="node_modules/bootstrap/dist/js/bootstrap.min.js"></SCRIPT>
+
+    <!-- External Stylesheets -->
+    <LINK rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <LINK rel="stylesheet" type="text/css" href="node_modules/font-awesome/css/font-awesome.min.css">
+
+    <!-- App Specific Stylesheets -->
+    <LINK rel="stylesheet" type="text/css" href="resources/styles/base.css">  
+
+
+</head>
+
+<body class="page-header-fixed page-sidebar-closed-hide-logo page-md">
+   <div class="wrapper">
+        <header ng-include="'app/templates/header.html'" ng-controller="HeaderController" class="page-header"></header>
+        <div class="container-fluid">
+            <div class="page-content" style="padding-top: 23px">
+                <div ng-view></div> 
+            </div>
+        </div>
+    </div>
+
+
+    
+    <!-- END CORE PLUGINS -->
+    <script src="app/controllers/serviceController.js"></script>
+    <script src="app/controllers/MainController.js"></script>
+    <script src="app/controllers/headerController.js"></script>
+    <script src="app/controllers/qbController.js"></script>
+    <script src="app/app.js"></script>
+
+</body>
+
+</html>

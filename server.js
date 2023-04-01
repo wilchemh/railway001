@@ -1,6 +1,7 @@
 //Declare Module Includes
 const express         = require('express');
 const expressSession  = require('express-session');
+var path              = require('path');
 const pg              = require('pg');
 const pgSession       = require('connect-pg-simple')(expressSession);
 const passport        = require('passport');
@@ -29,6 +30,20 @@ server.use(expressSession({
 
 server.use(passport.initialize());
 server.use(passport.session());
+
+
+//Declare Static resources
+server.use('/node_modules', express.static(__dirname + '/node_modules/'));
+server.use('/resources', express.static(__dirname + '/resources/'));
+server.use('/app', express.static(__dirname + '/app/'));
+
+
+server.get('/index.html', function(req, res) {
+    res.sendFile(path.join(__dirname + '/index.html'));
+  });
+
+
+
 
 // Application Route Includes
 const todos = require('./api/todos');

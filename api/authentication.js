@@ -35,14 +35,8 @@ router.post('/logout', util.isAuthenticated, function(req, res, next) {
         res.clearCookie('connect.sid');
         res.sendStatus(200);
         //res.redirect('/');
+        //res.send(api_result(true, null, 'User Successfully Logged Out'));
     });
-
-    //Remove Client Session Cookie on Response
-    //res.clearCookie('connect.sid');
-
-    //Redirect to Logon Page
-    //res.send(api_result(true, null, 'User Successfully Logged Out'));
-    //res.sendStatus(200);
 
 })
 
@@ -51,10 +45,6 @@ router.post('/logout', util.isAuthenticated, function(req, res, next) {
 router.post('/authenticateUser', async function(req, res, next) {
 
     try {
-
-        // Get Datbase Connection
-        //const pool = await poolPromise
-        //const request =  new sql.Request(pool);  
 
         //Read values from req BODY
         //const email     = req.body.email;
