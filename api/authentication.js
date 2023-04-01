@@ -12,11 +12,11 @@ const pool = new Pool();
 // Get User
 router.get('/getUser', function(req, res, next) {
 
-    // return urer name
+    // return user object
     if (req.isAuthenticated()){
-        const userObj = {}
-        userObj.userID = req.user.userID;
-        userObj.type = req.user.type;
+        //const userObj = {}
+        //userObj.userID = req.user.userID;
+        //userObj.type = req.user.type;
         //const user = req.user.userID;
         res.send(api_result(true, req.user, 'Logged In'));
     } else {

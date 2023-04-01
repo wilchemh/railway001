@@ -44,7 +44,8 @@ server.use('/authentication', auth);
 
 
 server.get('/', function(req,res){
-    res.send('Code Starter')
+    //res.send('Code Starter')
+    res.status(200).send('Code Starter');
 });
 
 
