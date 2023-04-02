@@ -5,6 +5,25 @@ var app = angular.module('statPro', [
     'oc.lazyLoad'
   ]);
   
+
+// Custome service to trap any 401 responses from our API and direct user to login page
+app.service('authInterceptor', function($q) {
+  var service = this;
+
+  service.responseError = function(response) {
+      if (response.status == 401){
+          window.location = "#!login";
+      }
+      return $q.reject(response);
+  };
+})
+
+// Config app to use the authInterceptor service for all $http calls
+app.config(['$httpProvider', function($httpProvider) {
+  $httpProvider.interceptors.push('authInterceptor');
+}]);
+
+
   
   app.config(['$routeProvider',
     function($routeProvider) {
