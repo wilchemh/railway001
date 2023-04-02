@@ -1,9 +1,8 @@
 var app = angular.module('statPro', [
     'ngRoute',
     'headerController',
-    'mainController',
-    'qbController',
-    'services'
+    'services',
+    'oc.lazyLoad'
   ]);
   
   
@@ -15,9 +14,12 @@ var app = angular.module('statPro', [
             templateUrl: 'app/templates/main_content.html',
             controller: 'MainController',
             resolve: {
-            data: function(serviceController) {
-                return serviceController.loadInitialData();
-            }
+              data: function(serviceController) {
+                  return serviceController.loadInitialData();
+              },
+              loadDependencies: ['$ocLazyLoad', function($ocLazyLoad) {
+                return $ocLazyLoad.load(['app/controllers/mainController.js']);
+              }]
             }
         }).
         when('/qb', {
@@ -26,7 +28,10 @@ var app = angular.module('statPro', [
             resolve: {
               data: function(serviceController) {
                 return serviceController.loadQuarterbackData();
-              }
+              },
+              loadDependencies: ['$ocLazyLoad', function($ocLazyLoad) {
+                  return $ocLazyLoad.load(['../app/controllers/qbController.js','resources/styles/qb.css']);
+              }]
             }
           }).
         otherwise({
