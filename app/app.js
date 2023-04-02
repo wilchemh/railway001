@@ -53,6 +53,18 @@ app.config(['$httpProvider', function($httpProvider) {
               }]
             }
           }).
+          when('/login', {
+            templateUrl: 'app/templates/login.html',
+            controller: 'loginController',
+            resolve: {
+              data: function(serviceController) {
+                return serviceController.loadQuarterbackData();
+              },
+              loadDependencies: ['$ocLazyLoad', function($ocLazyLoad) {
+                  return $ocLazyLoad.load(['app/controllers/loginController.js','resources/styles/login.css']);
+              }]
+            }
+          }).  
         otherwise({
             redirectTo: '/'
         });

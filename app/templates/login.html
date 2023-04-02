@@ -1,0 +1,185 @@
+<!-- <script src="https://js.stripe.com/v3/"></script> -->
+
+<div class="container-fluid">
+  <div ng-cloak class="page-content" style="padding-top: 23px">
+
+     <!-- LOGIN FORM -->
+          <div class="loginWrapper" ng-show="showSignup === 'signin'">
+            <form class="form-signin">
+              <div><img class="mb-4" src="../../resources/images/statdogs-logo.png" alt="" height="65"></div>
+              <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+              <input ng-model='dataLogin.email' type="email" class="form-control form-control-email" placeholder="Email address" required autofocus>
+              <input ng-model='dataLogin.password' type="password" class="form-control form-control-password" placeholder="Password" required>
+              <button ng-click='signIn()' class="btn btn-lg btn-primary btn-block">Sign in</button>
+              <button ng-click='showSignUpForm()' class="btn btn-lg btn-orange btn-block">Create Account</button>
+              <button ng-click='resetPasswordRequest()' class="btn btn-lg btn-link btn-block">Forgot Password</button>
+              <p class="mt-5 mb-3 text-muted">&copy; 2018-2019</p>
+            </form>
+          </div> 
+          
+    <!-- SIGN UP FORM PAGE 3-->
+          <div class="loginWrapper" ng-show="showSignup === 'signup_p3'">
+              <div class="create-account-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+                  <h1 class="display-4">Create Account</h1>
+                  <p class="lead lead-small">
+                      By creating an account and paying for any subscription, you acknowledge that you have read all of our terms of service and that you agree to all terms. This site is not intended for small, mobile screens such as a phone or small tablet reader.  It is meant for use on a desktop or laptop computer. All sales final. You can manage your subscription at any time through your profile page.
+                  </p>
+                </div>
+
+            <form name=signup_form class="form-signup" novalidate>
+              <!-- <div class="form-group row">
+                  <H3>Create Account</H3>
+              </div> -->
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label">First Name</label>
+                <div class="col-sm-10">
+                  <input name="fname" ng-model='dataSignup.fname' class="form-control" placeholder="First Name" required>
+                </div>
+              </div>
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label">Last Name</label>
+                  <div class="col-sm-10">
+                   <input ng-model='dataSignup.lname' class="form-control" placeholder="Last Name" required>
+                  </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Email</label>
+                <div class="col-sm-10">
+                  <input type="email" ng-model='dataSignup.email' class="form-control" placeholder="Email" required>
+                </div>
+              </div>
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label">Confirm Email</label>
+                  <div class="col-sm-10">
+                    <input type="email" ng-model='dataSignup.email2' class="form-control" placeholder="Confirm Email" required>
+                  </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Password</label>
+                <div class="col-sm-10">
+                  <input type="password" ng-model='dataSignup.password' class="form-control" placeholder="Password - between 8 and 30 characters and include both letters and numbers" required>
+                </div>
+              </div>
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label">Confirm Password</label>
+                  <div class="col-sm-10 tall-label">
+                    <input type="password" ng-model='dataSignup.password2' class="form-control" placeholder="Confirm Password" required>
+                  </div>
+              </div>
+              <fieldset class="form-group">
+                <div class="row">
+                  <legend class="col-form-label col-sm-2 pt-0">Choose Plan</legend>
+                  <div class="col-sm-10">
+                    <div class="form-check">
+                      <input class="form-check-input" ng-change="planSelected()" ng-model="dataSignup.plan" type="radio" id="monthRadio" ng-value="plan_monthly_id">
+                      <label class="form-check-label" for="monthRadio">
+                        Monthly Plan @ $9.99 / Month
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" ng-change="planSelected()" ng-model="dataSignup.plan" type="radio" id="yearRadio" ng-value="plan_yearly_id">
+                      <label class="form-check-label" for="yearRadio">
+                        Yearly Plan @ $89.99 / Year
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label">Coupon Code</label>
+                  <div class="col-sm-6 tall-label" ng-if="!coupon_applied">
+                    <input ng-model='dataSignup.code' class="form-control" placeholder="If you have a Coupon Code enter it here">
+                  </div>
+                  <div class="col-sm-6 tall-label" ng-if="coupon_applied">
+                    {{dataSignup.code}}
+                  </div>
+                  <div class="col-sm-4">
+                    <button ng-click='applyCoupon()' ng-if="!coupon_applied" ng-disabled="submitting" class="btn btn-lg btn-orange btn-block">Apply Coupon</button>
+                    <button ng-click='removeCoupon()' ng-if="coupon_applied" ng-disabled="submitting" class="btn btn-lg btn-orange btn-block">Remove Coupon</button>
+                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-sm-2">Credit or debit card</div>
+                <div class="col-sm-10">
+                    <div id="card-element">
+                        <!-- A Stripe Element will be inserted here. -->
+                    </div>
+                    <!-- Used to display Element errors. -->
+                    <div id="card-errors" role="alert"></div>
+                </div>
+              </div>
+
+              <div class="form-group row" ng-if="coupon_applied">
+                  <label class="col-sm-2 col-form-label">Discount</label>
+                  <div class="col-sm-10 tall-label">
+                    {{plan_discount | currency}}
+                  </div>
+              </div>
+
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label">Today's Total</label>
+                  <div class="col-sm-10 tall-label">
+                    {{plan_total | currency}}
+                  </div>
+              </div>
+
+
+            </BR>
+
+              <div ng-if="errorThrown" class="alert alert-danger" role="alert">
+                  {{errorMessage}}
+              </div>
+
+              <div class="form-group row">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-6">
+                    <button ng-click='signUp2()' ng-disabled="submitting" class="btn btn-lg btn-orange btn-block">Sign Up</button>
+                    <button ng-click='hideSignUpForm()' class="btn btn-lg btn-link btn-block">Cancel</button>
+                </div>
+                <div class="col-sm-3"></div>
+              </div>
+            </form>
+          </div>
+
+
+
+    <!-- RESET REQUEST FORM PAGE 4-->
+    <div class="loginWrapper" ng-show="showSignup === 'signup_p4'">
+        <form name=signup_form class="form-signup" novalidate>
+          <div class="form-group row">
+              <H3>Request Password Reset</H3>
+          </div>
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+              <input type="email" ng-model='resetEmail' class="form-control" placeholder="Email" required>
+            </div>
+          </div>
+
+        </BR>
+
+          <div ng-if="errorThrown" class="alert alert-danger" role="alert">
+              {{errorMessage}}
+          </div>
+
+          <div ng-if="successThrown" class="alert alert-success" role="alert">
+              {{errorMessage}}
+          </div>
+
+          <div class="form-group row">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-6">
+                <button ng-click='requestResetCode()' ng-disabled="submitting" class="btn btn-lg btn-primary btn-block">Send reset password email</button>
+                <button ng-click='hideSignUpForm()' class="btn btn-lg btn-link btn-block">Cancel</button>
+            </div>
+            <div class="col-sm-3"></div>
+          </div>
+        </form>
+      </div>          
+
+
+
+
+
+  </div>
+</div>
